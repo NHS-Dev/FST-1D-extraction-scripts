@@ -5,8 +5,7 @@ import pandas as pd
 from os import path
 from dateutil import relativedelta as dt, parser as dtparser
 
-#path for input .fst file
-input = "/home/brd004/site3/CSLM_experiment/SPS_5.9.9_CSLM_exp5/Gem_geophy.fst"
+## Required for time functions below
 #path for input data 
 #path_input = '/home/ega001/store4/sps/experiments/CAN_10K_SPS61/pilot'
 #path for output data 
@@ -252,7 +251,7 @@ def fstgetdata(inputfst, coords = None, ip2 =-1, etiket ='', lat = None, lon = N
         return var_df
     print('\nProcessing has completed.')
             
-def utctimetofstfname_CSLM_input(utctime):
+def utctimetofstfname_input(utctime):
 
     # 00:00->23:00
     filetime = utctime
@@ -267,7 +266,7 @@ def utctimetofstfname_CSLM_input(utctime):
     # Return file path - ip2 (hour) not needed - daily files
     return {'path': fstsrcpath}
 
-def utctimetofstfname_CSLM_output(utctime, ip2 = None):
+def utctimetofstfname_output(utctime, ip2 = None):
 
     # 00:00->23:00
     filetime = utctime
