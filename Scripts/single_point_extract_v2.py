@@ -53,13 +53,21 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
     else: 
         pass
 
+    if ip1 is None:
+        data = []
+        for i in nomvar
+            var = rmn.fstlir(fileId, nomvar = i)
+            data_grid = rmn.readGrid(fileId, var)
+            var_array = var['d']
+            data.append(var_array)
+    else:
     #loop through and append arrays for each variable -- then produce an array of tuples where each array is equal to the threshold
-    data = []
-    for i in ip1:  ### use ip1 instead 
-        var = rmn.fstlir(fileId, ip1 = i)
-        data_grid = rmn.readGrid(fileId, var)
-        var_array = var['d']
-        data.append(var_array)
+        data = []
+        for i in ip1:  ### use ip1 instead 
+            var = rmn.fstlir(fileId, ip1 = i)
+            data_grid = rmn.readGrid(fileId, var)
+            var_array = var['d']
+            data.append(var_array)
     #search for matching values    
     val_len = len(ip1)
     array_z = []
