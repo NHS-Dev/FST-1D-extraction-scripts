@@ -41,7 +41,9 @@ final_df = fstgetdata(input_geophy, coords = coords)
 
 ```
 
-**Note**: file names for *.fst* files are often incremented by date and time of the experiment. *utctimetofstfname_output* can be used in a loop to increment through various files within the same directory. The example file *SVS_regular_tile_v2.py* contains a more complex data extraction example. This script may be repurposed. 
+**Note**: file names for *.fst* files are often incremented by date and time of the experiment. *utctimetofstfname_output* can be used in a loop to increment through various files within the same directory. 
+
+The example file *SVS_regular_tile_v2.py* contains a more complex data extraction example. This script may be repurposed. 
 
 ## License
 
