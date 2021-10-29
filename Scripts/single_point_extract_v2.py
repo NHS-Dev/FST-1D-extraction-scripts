@@ -54,7 +54,7 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
 
     if ip1 is None:
         data = []
-        for i in nomvar
+        for i in nomvar:
             var = rmn.fstlir(fileId, nomvar = i)
             data_grid = rmn.readGrid(fileId, var)
             var_array = var['d']

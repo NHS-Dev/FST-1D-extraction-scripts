@@ -65,7 +65,7 @@ while FST_CURRENT_TIME < FST_STOP_BEFORE_TIME:
     state_data.append(state_in)
     #generate list of data paths
     for ip2 in range(24):
-        fstsrc = utctimetofstfname_output(FST_CURRENT_TIME, ip2 = ip2))
+        fstsrc = utctimetofstfname_output(FST_CURRENT_TIME, ip2 = ip2)
         forcing_in = fstgetdata(fstsrc['path'], coords = coords)
         appended_data.append(forcing_in)
     FST_CURRENT_TIME += dt.relativedelta(days = 1) #(minutes = FST_RECORD_MINUTES)
