@@ -1,17 +1,66 @@
+"""
+
+MSC FST Data extractor 
+
+A 1D extraction tool for FST files created by MSC
+
+Created: Oct 12th, 2021
+
+Contributors:
+    Brenden Disher
+    Daniel Princz
+
+"""
+
+# ============================================================================
 import rpnpy.librmn.all as rmn
 import numpy as np 
 import os, sys
 import pandas as pd
 from os import path
 from dateutil import relativedelta as dt, parser as dtparser
+# ============================================================================
+''' 
 
+configuration
+    
+    configure the paths required for the functions; utctimetofstfname_input and utctimetofstfname_output
+    
+    Options
+    ----------
+    path_input: path 
+        path to folder containing input data
+    path_output: path 
+        path to folder containing output data
+        
+    
+'''
 ## Required for time functions below
 #path for input data 
-#path_input = '/home/ega001/store4/sps/experiments/CAN_10K_SPS61/pilot'
+path_input = '/home/ega001/store4/sps/experiments/CAN_10K_SPS61/pilot'
 #path for output data 
 path_output = '/home/brd004/site3/CSLM_experiment/SPS_5.9.9_CSLM_exp5/output'
 
+#-----------------------------------------
+
 def fstgetip1(inpufst, ip1_list):
+    
+    """
+    Generates list of keys based on a list of IP1 values. 
+    
+    Parameters
+    ----------
+       inputfst: path
+            path to FST file.
+       ip1: list 
+            list of ip1 value(s) for the desired tile. 
+    
+    Returns
+    ----------
+            list of keys based on ip1 values 
+ 
+    """
+    
     #check if the file is FST
     if not rmn.isFST(inputfst):
        raise rmn.FSTDError("Not an FSTD file: %s " % inputfst)
@@ -32,10 +81,46 @@ def fstgetip1(inpufst, ip1_list):
          key_list.append(var_key)
          print(var['nomvar'], var['key'])
     return key_list
+#-----------------------------------------
     
 def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1, ip3 = -1, etiket = ' ', lat = None, lon = None, x = None, y = None):
+    """
+    extracts a pair or coordinates based on parameters or threshold values. 
+    
+    Parameters
+    ----------
+       inputfst: path
+            path to FST file. (required)
+       nomvar: list 
+            list of nomvar for each tile (optional)
+       threshold: int 
+            value ranging from 1 to 0. Can be used to isolate specific tiles. (required)
+       ip1: list 
+            list of ip1 value(s) for the desired tile. (optional)
+       ip2: int
+            ip2 value (optional)
+       ip3: int 
+            ip3 value (optional)
+       etiket:  
+            eticket value (optional)
+       lat: int
+            latitude of desired coordinate (optional)
+       lon: int
+            longitude of desired coordinate (optional)
+       x: int 
+            'x' grid value of desired coordinate (optional)
+       y: int
+            'x' grid value of desired coordinate (optional)
+            
+    Returns
+    ----------
+            list containing array of coordinates that met conditions within function
+            
+            ex: (array([57.588123], dtype=float32), array([272.76974], dtype=float32))
 
-#check if the file is FST
+    """
+
+    #check if the file is FST
     if not rmn.isFST(inputfst):
        raise rmn.FSTDError("Not an FSTD file: %s " % inputfst)
 
@@ -51,7 +136,9 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
         raise sys.stderr.write("No threshold value entered")
     else: 
         pass
-
+    
+    #generate array if nomvar is used instead of IP1
+    #loop through and append arrays for each variable -- then produce an array of tuples where each array is equal to the threshold
     if ip1 is None:
         data = []
         for i in nomvar:
@@ -67,7 +154,8 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
             data_grid = rmn.readGrid(fileId, var)
             var_array = var['d']
             data.append(var_array)
-    #search for matching values    
+            
+    #search for matching values based on threshold -- if matching values are found,    
     val_len = len(ip1)
     array_z = []
     counter = val_len
@@ -82,25 +170,18 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
         array_fin = np.vstack(array_z)
         u,c = np.unique(array_fin, axis = 0, return_counts = True )
         array_q = u[c == val_len]
+    
+    #exit if no matching values are found/ 
     if len(array_q) == 0:
         print("No values found")
         exit()
     else:
         pass
-    # else:
-        # pass
+            
     array_x = array_q[0].astype(np.float32)
     array_y = array_q[1].astype(np.float32)
-    # else:  
-        # data = rmn.fstlir(fileId, ip1 = ip1, ip2 = ip2, ip3 = ip3, nomvar = nomvar, etiket = etiket) 
-        # array = data['d']
-        # #derive the grid 
-        # data_grid = rmn.readGrid(fileId, data)
-        # #determine x and y locations where the threshold is met 
-        # array_q = np.where(array == float(threshold))
-        # array_x = array_q[0].astype(np.float32)
-        # array_y = array_q[1].astype(np.float32)
-        
+       
+    # determine lat/lon coordinates if x/y are input into the function 
     if not (lat and lon) is None:   
         coord_xy = rmn.gdllfxy(data_grid, array_x +1, array_y +1)
         if [lat in coord_xy['lat'] and lon in coord_xy['lon']]:
@@ -109,6 +190,7 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
         else:
             print("Warning: coordinates not found in threshold array")
             exit()
+    # determine x/y coordinates if lat/lon are input into the function 
     elif not (x and y) is None:
         x = x + 1
         y = y + 1
@@ -118,6 +200,7 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
         else:
             print("Warning: coordinates not found in threshold array")
             exit()
+    #generates random coordinates that match the conditions if none are input into the function. 
     else:  
         array_random = tuple(np.random.permutation(array_q)[0])
         lat = (array_random[0]+1).tolist()
@@ -132,12 +215,50 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
     #close the file 
     rmn.fstcloseall(fileId)
     
+    #return coordinates 
     return(lat_coord,lon_coord)
 
     print('\nProcessing has completed.')
 
+#-----------------------------------------
 
-def fstgetdata(inputfst, coords = None, ip2 =-1, etiket ='', lat = None, lon = None, state_var = False, keylist_in = None, wswd = False):
+def fstgetdata(inputfst, coords = None, ip2 =-1, etiket ='', lat = None, lon = None, state_var = False):
+    """
+    extracts data based on coordinates input 
+    
+    Parameters
+    ----------
+       inputfst: path
+            path to FST file. (required)
+       coords: 
+       ip2: int 
+            value ranging from 1 to 0. Can be used to isolate specific tiles. (optional)
+       eticket: list 
+            list of ip1 value(s) for the desired tile. (optional)
+       lat: int
+            latitude of desired coordinate (optional)
+       lon: int
+            longitude of desired coordinate (optional)
+       state_var: bool 
+            true or false: if true, a seperate 'state_var' dataframe will be established
+            containing state variables (ip2 = 24) within the FST file. 
+
+    Returns
+    ----------
+            Pandas dataframe. 
+        
+            Index | data | date | ip2 |nomvar
+            _____________________________________________________________________________________________________________
+            
+            0 |
+            1 |
+            2 |
+            .
+            .
+            .
+            n |
+
+    """
 
 #check if the file is FST
     if not rmn.isFST(inputfst):
@@ -160,20 +281,14 @@ def fstgetdata(inputfst, coords = None, ip2 =-1, etiket ='', lat = None, lon = N
     #Set the interpolation method 
     rmn.ezsetopt(rmn.EZ_OPT_INTERP_DEGREE, rmn.EZ_INTERP_NEAREST)
         
-    #generate keylist
- 
+    #generate keylist 
     keylist = rmn.fstinl(fileId)
 
-    # if keylist_in is None:
-        # pass
-    # else:
-        # keylist = [x for x in keylist_in if x in keylist]
-
+    #generate
     var_list  = []
     data_list = [] 
     date_list = []
-    ip2_list = []
-    #uuvv = []
+    ip2_list  = []
     var_df_state = None
     var_df_forcing = None
 
@@ -242,19 +357,47 @@ def fstgetdata(inputfst, coords = None, ip2 =-1, etiket ='', lat = None, lon = N
                 var_df_forcing = var_df.loc[var_df.ip2 != 24]
             else:
                 pass
+    
     #close the file 
     rmn.fstcloseall(fileId)
     
+    #Generate separate arrays if state variables are extracted. 
     if state_var is True:
         return var_df_state,var_df_forcing
     else:
         return var_df
     print('\nProcessing has completed.')
+
+#-----------------------------------------
+
+def utctimetofstfname_input(utctime, ip2 = None):
+
+    """
+    determines file names based on the desired time range for input files and returns a path. 
+    
+    Parameters
+    ----------
+        utctime: datetime
+            datetime object containing the utc time for the input file.
             
-def utctimetofstfname_input(utctime):
+            ex: datetime.datetime(2016, 8, 4, 0, 0, tzinfo=tzutc())
+        
+    Returns
+    ----------
+        dictionary containing the path and ip2 of the file based on utctime. 
+        
+        {'ip2': --, 'path': ''}
+        
+        
+
+    """
 
     # 00:00->23:00
     filetime = utctime
+    if (not ip2 is None):
+        fileip2 = ip2
+    else:
+        fileip2 = filetime.hour
     filefcst = 12
     fstsrcpath = path_input + ('/%04d%02d%02d%02d_forcing' % (filetime.year, filetime.month, filetime.day, filefcst))
 
@@ -263,10 +406,31 @@ def utctimetofstfname_input(utctime):
         print('ERROR: Path does not exist. Script cannot continue. ' + fstsrcpath)
         exit()
 
-    # Return file path - ip2 (hour) not needed - daily files
-    return {'path': fstsrcpath}
+    # Return file path and adjust ip2.
+    # 01:00->24:00
+    return { 'path': fstsrcpath, 'ip2': fileip2 }
+
+#-----------------------------------------
 
 def utctimetofstfname_output(utctime, ip2 = None):
+
+    """
+    determines file names based on the desired time range for input files and returns a path. 
+    
+    Parameters
+    ----------
+        utctime: datetime
+            datetime object containing the utc time for the input file.
+            
+            ex: datetime.datetime(2016, 8, 4, 0, 0, tzinfo=tzutc())
+        
+    Returns
+    ----------
+        dictionary containing the path and ip2 of the file based on utctime. 
+        
+        {'ip2': --, 'path': ''}
+
+    """
 
     # 00:00->23:00
     filetime = utctime
@@ -290,4 +454,4 @@ def utctimetofstfname_output(utctime, ip2 = None):
     # 01:00->24:00
     return { 'path': fstsrcpath, 'ip2': fileip2 }
 
-
+#-----------------------------------------

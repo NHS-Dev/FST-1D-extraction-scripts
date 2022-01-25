@@ -1,25 +1,37 @@
+"""
+
+MSC FST Data extractor -- sample script 
+
+A sample script built to extract data from a 1D point from FST files created by MSC
+
+Created: Oct 12th, 2021
+
+Contributors:
+    Brenden Disher
+    Daniel Princz
+
+"""
+
+# ============================================================================
 from single_point_extract_v2 import *
 from datetime import datetime
 from time import gmtime, strftime
 from dateutil import relativedelta as dt, tz, parser as dtparser
+# ============================================================================
 
-#Return coordinates where where ['d'] of the IP1 values are equal to the threshold:
-#therefore - this example does not include glacier, inland lake, water, urban
-#Inputs 
-#geophy.fst file 
-#lat (optional - if known)
-#lon (optional - if known)
-#ip1 - format = list - can enter multiple values 
-#Nomvar - format = list - can enter multiple values. 
-#threshold = VF threshold. (Currently required)
-
+'''
+Return coordinates where where ['d'] of the IP1 values are equal to the threshold
+this example finds coordinates where there is no glacier, inland lake, water, or urban tile. 
+'''
+input_geophy = "//fs/site4/eccc/mrd/rpnenv/ega001/sps/experiments/Ref_SVS1_RDRS_v2/geophy/Gem_geophy.fst"
 ip1 = [1199, 1198, 1197, 1179]
 lat = 53.9215087890625
 lon = 272.4756774902344
 coords = fstgetcoords(input_geophy, ip1 = ip1 ,lat = lat, lon = lon, threshold = 0)
-#coords = (lat,lon)
 
-##########################################################################
+
+#-----------------------------------------
+
 #read and export data from geophysical fields (GEM_geophy.fst)
 input_geophy = "//fs/site4/eccc/mrd/rpnenv/ega001/sps/experiments/Ref_SVS1_RDRS_v2/geophy/Gem_geophy.fst"
 output_path = ''
@@ -30,8 +42,9 @@ geophy_subset = geophy_subset[['nomvar', 'data']]
 output_file = os.path.join(output_path, 'geophy_var.txt')
 geophy_subset.to_csv(output_file, sep =' ', index = False, header = ['',''])
 
-##########################################################################
-#read and export input data 
+#-----------------------------------------
+
+#read and export output data 
 output_path = ''
 
 LOCAL_TIME_ZONE = tz.gettz(u'GMT+0')
@@ -41,10 +54,9 @@ if (LOCAL_TIME_ZONE is None):
 
 #  Start date/time.
 START_TIME = datetime(2014, 8, 1, tzinfo = LOCAL_TIME_ZONE)
-# Stop date/time.
+#  Stop date/time.
 STOP_BEFORE_TIME = datetime(2014, 8, 5, tzinfo = LOCAL_TIME_ZONE)
-
-
+#interval
 FST_RECORD_MINUTES = +60
 
 # Initialize time loop.               
@@ -55,7 +67,7 @@ FST_CURRENT_TIME = FST_START_TIME
 
 #Create list to append data 
 appended_data = []
-state_data  = []
+state_data    = []
 
 while FST_CURRENT_TIME < FST_STOP_BEFORE_TIME:
     FRIENDLY_TIME = FST_CURRENT_TIME.replace(tzinfo = None) + UTC_STD_OFFSET
