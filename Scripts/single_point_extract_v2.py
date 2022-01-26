@@ -83,7 +83,7 @@ def fstgetip1(inpufst, ip1_list):
     return key_list
 #-----------------------------------------
     
-def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1, ip3 = -1, etiket = ' ', lat = None, lon = None, x = None, y = None):
+def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, lat = None, lon = None, x = None, y = None):
     """
     extracts a pair or coordinates based on parameters or threshold values. 
     
@@ -97,11 +97,6 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
             value ranging from 1 to 0. Can be used to isolate specific tiles. (required)
        ip1: list 
             list of ip1 value(s) for the desired tile. (optional)
-       ip2: int
-            ip2 value (optional)
-       ip3: int 
-            ip3 value (optional)
-       etiket:  
             eticket value (optional)
        lat: int
             latitude of desired coordinate (optional)
@@ -178,8 +173,8 @@ def fstgetcoords(inputfst, nomvar = ' ', threshold = None, ip1 = None, ip2 = -1,
     else:
         pass
             
-    array_x = array_q[0].astype(np.float32)
-    array_y = array_q[1].astype(np.float32)
+    array_x = array_q[:, [0]].astype(np.float32)
+    array_y = array_q[:, [1]].astype(np.float32)
        
     # determine lat/lon coordinates if x/y are input into the function 
     if not (lat and lon) is None:   
